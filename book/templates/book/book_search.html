@@ -1,0 +1,65 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% block title %}Login{% endblock title %}
+{% block body %}
+<center>
+
+<form method="post" action="{% url 'book:booksearch' %}">
+    {% csrf_token %}
+    <input type="text" id="myInput" name="bookinput">
+    <button class="btn btn-default" type="submit" >Check availabilty</button>
+
+</form>
+
+
+    {% if searchresult %}
+    {% for book in searchresult %}
+
+            <table class="table table-hover" style='width:60%;margin-top:5%;'>
+
+            <tr><td><input type="hidden" name="book" value="{{ book.id }}">{{forloop.counter}}. {{ book.name }}</td><td>{% if book.avail_stock > 0 %}In Stock</td>
+                <td><button class="btn btn-primary stretched-link" type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Issue now</button>{% else %}Out Stock</td>
+                <td><form method="post" action="{% url 'book:myissuedbook' %}">{% csrf_token %}<input type="hidden" name="book" value="{{ book.id }}"><button class="btn btn-primary stretched-link" type="submit" >Advance book</button></form></td></tr>{% endif %}
+            </table>
+
+
+
+
+
+    {% endfor %}
+    {% endif %}
+            <!-- The Modal -->
+              <div class="modal" id="myModal">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                      <h4 class="modal-title">For Issueing Book</h4>
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                    <form method="post" action="{% url 'book:myissuedbook' %}">{% csrf_token %}
+                        Select Date of Return:<input type="date" name="date" >
+                        <input type="hidden" name="book" value="{{ book.id }}">
+                        <button type="submit" class="btn btn-primary stretched-link" id="btn_book">Book</button>
+                    </form>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-danger" data-dismiss="modal" id="close" onclick="" >close</button>
+                    </div>
+                </div>
+
+</center>
+{% endblock body %}
+
+{% block script %}
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="{% static 'js/autocomplete.js' %}"></script>
+
+{% endblock script %}

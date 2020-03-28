@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<!--    <script src="{% static 'js/bootstrap_min_css.js' %}"></script>-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	  <script src="{% static 'js/autocomplete.js' %}"></script>
+
+</head>
+<body class="bg-img">
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header">
+
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        </button>
+            <a class="navbar-brand" href="{% url 'accounts:index' %}">Library</a>
+        </div>
+        <div class="collapse navbar-collapse" id="topNavBar">
+            <ul class="nav navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="{% if request.resolver_match.url_name == 'booksearch' %}active{%endif%}">
+                    <a href="{% url 'book:booksearch' %}">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;Issue Book
+                    </a>
+                    </li>
+                {% endif %}
+                {% if user.is_staff %}
+                    <li class="{% if request.resolver_match.url_name == 'approval' %}active{%endif%}">
+                    <a href="{% url 'book:approval' %}">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;Check requests
+                    </a>
+                    </li>
+
+                {% endif %}
+
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+
+
+
+
+<!--            <ul class="nav navbar-nav navbar-right">-->
+
+                {% if user.is_authenticated %}
+                <li class="{% if request.resolver_match.url_name == 'myissuedbook' %}active{%endif%}">
+                    <a href="{% url 'book:myissuedbook' %}">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp; My Books
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'logout' %}active{%endif%}">
+                <a href="{% url 'accounts:logout' %}" id="logout">
+                    <span class="glyphicon glyphicon-off" aria-hidden="true"></span>&nbsp;Log out
+                </a>
+            </li>
+                <li class="active">
+                    <a href="#"><span aria-hidden="true"></span><b>{{user.name}}</b></a>
+                </li>
+                {% else %}
+                <li class="">
+                <a href="{% url 'accounts:login' %}">
+                    <span class="glyphicon glyphicon-off" aria-hidden="true"></span>&nbsp;Log in
+                </a>
+            </li>
+                {% endif %}
+            </ul>
+
+
+        </div>
+</div>
+</nav>
+{% block body %}
+
+{% endblock %}
+<script>
+
+</script>
+{% block script%}
+
+
+{% endblock script%}
+</body>
+</html>

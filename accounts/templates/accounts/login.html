@@ -1,0 +1,45 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Login{% endblock title %}
+{% block body %}
+
+    <div align="center"><h1>Login</h1>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+            {{ message }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <table class="table table-hover" style="width:50%;" align="center">
+    <form method="POST">
+        {% csrf_token %}
+
+        {% for field in form %}
+            <tr>
+                <td>
+                    {{ field.label}}
+                </td>
+                <td>
+                    {{ field }}
+                </td>
+                <td>
+                    {{ field.errors }}
+                </td>
+            </tr>
+        {% endfor%}
+        <tr><td></td>
+            <td rowspan="3">
+                <button class="btn btn-default" type="submit">Login</button>&nbsp;<a class="btn btn-default" href="{% url 'accounts:registration' %}">Sign Up</a>
+            </td><td></td>
+        </tr>
+
+
+    </form>
+    </table>
+    <hr>
+</div>
+
+{% endblock body %}

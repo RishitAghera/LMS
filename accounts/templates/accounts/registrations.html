@@ -1,0 +1,45 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Registrations{% endblock title %}
+{% block body %}
+
+
+
+<center><h1>Register Yourself</h1></center>
+<!--<p id="error"></p></center>-->
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+            {{ message }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+<table class="table table-hover" style="width:70%;" align="center">
+
+<form method="POST" id="registration">
+    {% csrf_token %}
+
+    {% for field in form %}
+        <tr>
+            <td>
+                {{ field.label}}
+            </td>
+            <td>
+                {{ field }}
+            </td>
+            <td>
+                {{ field.errors }}
+            </td>
+        </tr>
+    {% endfor%}
+    <tr><td></td>
+        <td rowspan="3">
+            <button class="btn btn-default" type="submit" id="id_button" class="btn btn-default">Register</button>
+        </td>
+    </tr>
+
+</form>
+</table>
+{% endblock body %}
