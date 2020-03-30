@@ -9,7 +9,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=20)
     email = models.EmailField(unique=True)
     gender = models.CharField(max_length=1, choices=GENDER)
-    contact = models.CharField(max_length=10, unique=True)
+    contact = models.PositiveIntegerField(unique=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

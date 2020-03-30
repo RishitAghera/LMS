@@ -61,14 +61,10 @@ class MyIssuedBook(View):
                               "Waiting for Librarian's Confirmation..You will be notified by email when its been approved")
             else:
                 # when no stock available then new entry in waitingtable.
-                if WaitingTable.objects.filter(book=bookinput).count() == 0:
-                    new_waiting = WaitingTable.objects.create(book=bookinput)
-                    waiting_list = new_waiting.users.count() + 1
-                    new_waiting.users.add(request.user)
-                else:
-                    waiting_entry = WaitingTable.objects.get(book=bookinput)
-                    waiting_list = waiting_entry.users.count() + 1
-                    waiting_entry.users.add(request.user)
+                waiting_obj, created = WaitingTable.objects.get_or_create(book=bookinput)
+                waiting_list = waiting_obj.users.count() + 1
+                waiting_obj.users.add(request.user)
+
                 messages.info(request,
                               'Waiting list is ' + str(waiting_list) + ',You will be notified when book is available..')
         else:
@@ -87,11 +83,12 @@ class ApproveReq(View):
         return render(request, 'accounts/index.html', {'pending_req': pending_req})
 
     def post(self, request):
-        print(request.POST.get('book'))
-        req = IssuedBook.objects.get(book__id=request.POST.get('book'), user__id=request.POST.get('user_id'))
+        req = IssuedBook.objects.get(book__id=request.POST.get('book'), user__id=request.POST.get('user_id'),status='pending')
         req.status = 'booked'
         req.save()
-        print('updated')
+        book=Book.objects.get(id=request.POST.get('book'))
+        book.avail_stock -= 1
+        book.save()
         pending_req = IssuedBook.objects.filter(status='pending')
         messages.info(request, 'Approved book ' + str(req.book.name) + ' for user ' + str(req.user.name))
         return render(request, 'accounts/index.html', {'pending_req': pending_req})
@@ -101,21 +98,17 @@ class ReturnBook(View):
 
     @method_decorator(login_required, name='dispatch')
     def post(self, request):
-        print(request.POST.get('entry_id'))
         obj_del = IssuedBook.objects.filter(id=request.POST.get('entry_id'))
-        print(obj_del)
-        obj_del[0].delete()
+        # obj_del[0].delete()
+        obj_del.first().delete()
         book = Book.objects.get(id=request.POST.get('book'))
         book.avail_stock += 1
         book.save()
 
         # book issue for first user in waiting model
-        print('count in waitingtable:' + str(WaitingTable.objects.filter(book=book).count()))
         if book.avail_stock == 1 and WaitingTable.objects.filter(book=book).count() == 1:
             w = WaitingTable.objects.get(book=book)
-            print('w=' + str(w))
             first_user = w.waitingqueue_set.all().order_by('request_time').first().users
-            print(first_user)
             new_issue = IssuedBook.objects.create(book=book, user=first_user,
                                                   issued_date=datetime.now().date(),
                                                   return_date=datetime.now().date() + timedelta(days=5))
