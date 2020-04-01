@@ -1,10 +1,6 @@
 {% extends 'accounts/base.html' %}
-{% block title %}Registrations{% endblock title %}
 {% block body %}
-
-
-
-<center><h1>Register Yourself</h1></center>
+<center><h1>Register Book</h1>
 {% if messages %}
     <ul class="messages">
         {% for message in messages %}
@@ -15,6 +11,9 @@
         {% endfor %}
     </ul>
     {% endif %}
+</center>
+
+{% if form %}
 <table class="table table-hover" style="width:70%;" align="center">
 
 <form method="POST" id="registration">
@@ -35,10 +34,13 @@
     {% endfor%}
     <tr><td></td>
         <td rowspan="3">
-            <button class="btn btn-default" type="submit" id="id_button" class="btn btn-default">Register</button>
+            <button class="btn btn-default" type="submit" id="id_button" class="btn btn-default">Add</button>
         </td>
     </tr>
 
 </form>
 </table>
+{% else %}
+<h1>No form found</h1>
+{% endif %}
 {% endblock body %}

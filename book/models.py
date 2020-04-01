@@ -1,4 +1,6 @@
 from django.db import models
+from django.urls import reverse
+
 from accounts.models import User
 
 
@@ -15,6 +17,7 @@ class Category(models.Model):
 class Book(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
+    author = models.CharField(max_length=50,null=True)
     information = models.CharField(max_length=200)
     total_stock = models.PositiveIntegerField(default=0)
     avail_stock = models.PositiveIntegerField(default=0)
@@ -22,6 +25,8 @@ class Book(models.Model):
     def __str__(self):
         return '(' + str(self.category) + ') ' + str(self.name)
 
+    def get_absolute_url(self):
+        return reverse('book:booklist')
 
 class IssuedBook(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)

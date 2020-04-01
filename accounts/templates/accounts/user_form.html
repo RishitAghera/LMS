@@ -1,0 +1,21 @@
+{% extends 'accounts/base.html' %}
+
+{% block body %}<center>
+<h1>Profile</h1>
+<hr>
+
+<form class="form-horizontal" action="" method="post">
+    {% csrf_token %}
+    <table class="table table-hover" style="width:40%;">
+    {% for field in form %}
+    <tr><td>{{ field.label_tag }}</td><td>{{ field }}</td><td>{{ field.errors }}</td></tr>
+
+    {% endfor %}
+
+</table>
+<button type="submit" class="btn bnt-success">Submit</button>
+</form>
+
+</div>
+{% endblock body %}
+</center>

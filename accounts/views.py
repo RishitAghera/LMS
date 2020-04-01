@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from book.models import IssuedBook
 from lms import settings
 from .forms import *
-from django.views import View
+from django.views import View, generic
 from django.contrib.messages.views import messages
 
 
@@ -55,3 +55,13 @@ class Registration(View):
             return render(request, 'accounts/registrations.html', {'form': form})
         messages.info(request, 'Registration successfully..')
         return redirect('accounts:login')
+
+
+class ProfileView(generic.DetailView):
+    model = User
+    template_name = 'accounts/profile.html'
+    extra_context = {'form': RegistrationForm()}
+
+class ProfileUpdate(generic.UpdateView):
+    model = User
+    fields = ['name', 'username', 'gender', 'contact']

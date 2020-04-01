@@ -22,10 +22,6 @@
                 <td><form method="post" action="{% url 'book:myissuedbook' %}">{% csrf_token %}<input type="hidden" name="book" value="{{ book.id }}"><button class="btn btn-primary stretched-link" type="submit" >Advance book</button></form></td></tr>{% endif %}
             </table>
 
-
-
-
-
     {% endfor %}
     {% endif %}
             <!-- The Modal -->
@@ -41,18 +37,21 @@
 
                     <!-- Modal body -->
                     <div class="modal-body">
-                    <form method="post" action="{% url 'book:myissuedbook' %}">{% csrf_token %}
-                        Select Date of Return:<input type="date" name="date" >
-                        <input type="hidden" name="book" value="{{ book.id }}">
-                        <button type="submit" class="btn btn-primary stretched-link" id="btn_book">Book</button>
-                    </form>
+                        {% for book in searchresult %}
+                            <form method="post" action="{% url 'book:myissuedbook' %}">{% csrf_token %}
+                            Select Date of Return:<input type="date" name="date" >
+                            <input type="hidden" name="book" value="{{ book.id }}">
+                            <button type="submit" class="btn btn-primary stretched-link" id="btn_book">Book</button>
+                            </form>
+                        {% endfor %}
                     </div>
                     <!-- Modal footer -->
                     <div class="modal-footer">
                       <button type="button" class="btn btn-danger" data-dismiss="modal" id="close" onclick="" >close</button>
                     </div>
                 </div>
-
+                </div>
+              </div>
 </center>
 {% endblock body %}
 

@@ -2,11 +2,15 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 
+from accounts.forms import RegistrationForm
+from accounts.models import User
+from .forms import BookRegistrationForm
 from .models import Book, IssuedBook, WaitingTable
 # Create your views here.
-from django.views import View
+from django.views import View, generic
 import json
 from datetime import datetime, timedelta
 
@@ -50,23 +54,23 @@ class MyIssuedBook(View):
     def post(self, request):
         data = request.POST.copy()
         bookinput = Book.objects.get(id=data.get('book'))
-        if IssuedBook.objects.filter(user=request.user,
-                                     status='booked').count() < 3:  # User can not issue more than 3 books
+        if (IssuedBook.objects.filter(user=request.user,
+                                     status='booked').count() < 3):  # User can not issue more than 3 books
             if bookinput.avail_stock > 0:
                 # new req to the Issuedbook model if book is available in stock
                 new_issue = IssuedBook.objects.create(book=bookinput, user=request.user,
                                                       issued_date=datetime.now().date(),
                                                       return_date=request.POST.get('date'))
                 messages.info(request,
-                              "Waiting for Librarian's Confirmation..You will be notified by email when its been approved")
+                              "Waiting for Librarian's Confirmation..You will be notified by email when its been approved..")
             else:
-                # when no stock available then new entry in waitingtable.
                 waiting_obj, created = WaitingTable.objects.get_or_create(book=bookinput)
                 waiting_list = waiting_obj.users.count() + 1
                 waiting_obj.users.add(request.user)
-
+                usr_list = ', '.join([usr.name for usr in waiting_obj.users.all()])
                 messages.info(request,
-                              'Waiting list is ' + str(waiting_list) + ',You will be notified when book is available..')
+                              "Waiting list is " + str(
+                                  waiting_obj.users.count()) + ", users --> " + usr_list + ",You will be notified when book is available..")
         else:
             messages.error(request, 'You have already issued 3 books, return any book in order to issue another..')
             booklist = IssuedBook.objects.filter(user=request.user, status='booked')
@@ -83,10 +87,11 @@ class ApproveReq(View):
         return render(request, 'accounts/index.html', {'pending_req': pending_req})
 
     def post(self, request):
-        req = IssuedBook.objects.get(book__id=request.POST.get('book'), user__id=request.POST.get('user_id'),status='pending')
+        req = IssuedBook.objects.get(book__id=request.POST.get('book'), user__id=request.POST.get('user_id'),
+                                     status='pending')
         req.status = 'booked'
         req.save()
-        book=Book.objects.get(id=request.POST.get('book'))
+        book = Book.objects.get(id=request.POST.get('book'))
         book.avail_stock -= 1
         book.save()
         pending_req = IssuedBook.objects.filter(status='pending')
@@ -121,3 +126,56 @@ class ReturnBook(View):
         messages.info(request, 'Book is returned')
         booklist = IssuedBook.objects.filter(user=request.user, status='booked')
         return render(request, 'accounts/index.html', {'booklist': booklist})
+
+
+class DeleteRequest(View):
+    def post(self, request):
+        del_obj = IssuedBook.objects.filter(book__id=int(request.POST.get('book_id')),
+                                            user__id=int(request.POST.get('user_id')), status='pending')
+        del_obj.delete()
+        messages.success(request, 'Request deleted..')
+        return redirect('book:approval')
+
+
+class AllBookList(generic.ListView):
+    template_name = 'book/booklist.html'
+    paginate_by = 3
+
+    def get_queryset(self):
+        return Book.objects.all()
+
+
+class MyRequestList(View):
+    def get(self, request):
+        reqlist = IssuedBook.objects.filter(user=request.user, status='pending')
+        return render(request, 'book/myrequestlist.html', {'object_list': reqlist})
+
+
+class DeleteRequestUser(View):
+    def post(self, request):
+        del_obj = IssuedBook.objects.filter(book__id=int(request.POST.get('book_id')),
+                                            user__id=int(request.POST.get('user_id')), status='pending')
+        del_obj.delete()
+        messages.success(request, 'Request deleted..')
+        return redirect('book:reqlist')
+
+
+class IssuedBooklist(View):
+    def get(self,request):
+        issued_book=IssuedBook.objects.filter(status='booked')
+        return render(request,'book/issuedbooklist.html',{'issued_book':issued_book})
+
+
+class BookCreate(generic.CreateView):
+    model = Book
+    fields = '__all__'
+
+
+class BookUpdate(generic.UpdateView):
+    model = Book
+    fields = '__all__'
+
+
+class BookDelete(generic.DeleteView):
+    model = Book
+    success_url = reverse_lazy('book:booklist')

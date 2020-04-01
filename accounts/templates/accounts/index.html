@@ -3,7 +3,7 @@
 {% block body %}
 <center>
 {% if messages %}
-    <ul class="messages">
+    <ul class="messages" align="center">
         {% for message in messages %}
         <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>
             {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
@@ -19,8 +19,36 @@
     <thead><tr><td>User</td><td>Book</td><td>Category</td><td>Issue date</td></tr></thead>
     {% for req in pending_req %}
         <form method="post" action="{% url 'book:approval' %}">{% csrf_token %}
-            <tr><td><input type="hidden" name="book" value="{{ req.book.id }}"><input type="hidden" name="user_id" value="{{ req.user_id }}">{{ forloop.counter}}. {{ req.user.name }}</td><td>{{ req.book.name }}</td><td>{{ req.book.category.name}}</td><td>{{ req.issued_date }}</td><td><button class="btn btn-default" type="submit">Approve</button></td></tr>
+            <tr><td><input type="hidden" name="book" value="{{ req.book.id }}"><input type="hidden" name="user_id" value="{{ req.user_id }}">{{ forloop.counter}}. {{ req.user.name }}</td><td>{{ req.book.name }}</td><td>{{ req.book.category.name}}</td><td>{{ req.issued_date }}</td><td><button class="btn btn-default" type="submit">Approve</button><button class="btn btn-danger" type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">Reject</button></td></tr>
         </form>
+
+        <div class="modal" id="myModal">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                      <h4 class="modal-title">Delete Request</h4>
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                            <form method="post" action="{% url 'book:delreq' %}">{% csrf_token %}
+                                Are you sure to Reject issue request of <u>{{req.user.name}}</u> for the book <u>{{req.book.name}}?</u><br>
+                            <input type="hidden" name="book_id" value="{{ req.book.id }}"><input type="hidden" name="user_id" value="{{ req.user.id }}">
+                            <button type="submit" class="btn btn-primary stretched-link" id="btn_book">yes</button>
+                            </form>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-danger" data-dismiss="modal" id="close" onclick="" >close</button>
+                    </div>
+                </div>
+                </div>
+              </div>
+
+
     {% endfor %}
 
     </table>
@@ -39,6 +67,7 @@
 
     </table>
 {% endif %}
+
 
     {% if user.is_authenticated == False %}
     <h1>Welcome to Library management system..</h1>

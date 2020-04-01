@@ -1,0 +1,36 @@
+{% extends 'accounts/base.html' %}
+
+{% block body %}<center>
+<h1>Profile</h1>
+<hr>
+<table class="table table-hover" style="width:40%;">
+        <tr>
+            <td align="right" style="border:0px;">Name</td>
+            <td style="font-weight:bold;border:0px;">: {{ object.name }}</td>
+        </tr>
+
+        <tr>
+            <td align="right" style="border:0px;">Username</td>
+            <td style="font-weight:bold;border:0px;">: {{ object.username }}</td>
+        </tr>
+
+        <tr>
+            <td align="right" style="border:0px;">Gender</td>
+            <td style="font-weight:bold;border:0px;">: {% if object.gender == 'M' %}Male{% else %}Female{% endif %}</td>
+        </tr>
+
+        <tr>
+            <td align="right" style="border:0px;">Email</td>
+            <td style="font-weight:bold;border:0px;">: {{ object.email }}</td>
+        </tr>
+        <tr>
+            <td align="right" style="border:0px;">Contact</td>
+            <td style="font-weight:bold;border:0px;">: {{ object.contact }}</td>
+        </tr>
+
+
+</table>
+    <a href="{% url 'accounts:update-profile' user.id %}" class="btn btn-default">Update</a>
+</div>
+{% endblock body %}
+</center>
