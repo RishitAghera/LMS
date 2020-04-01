@@ -4,11 +4,11 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-
+from django.db.models import Q
 from accounts.forms import RegistrationForm
 from accounts.models import User
 from .forms import BookRegistrationForm
-from .models import Book, IssuedBook, WaitingTable
+from .models import Book, IssuedBook, WaitingTable, WaitingQueue
 # Create your views here.
 from django.views import View, generic
 import json
@@ -54,8 +54,11 @@ class MyIssuedBook(View):
     def post(self, request):
         data = request.POST.copy()
         bookinput = Book.objects.get(id=data.get('book'))
-        if (IssuedBook.objects.filter(user=request.user,
-                                     status='booked').count() < 3):  # User can not issue more than 3 books
+        if (IssuedBook.objects.filter(user=request.user, status__in=['booked', 'pending']).count() < 3) and \
+                (IssuedBook.objects.filter(
+                    Q(user=request.user) & Q(book=bookinput) & Q(status__in=['booked', 'pending'])).count() == 0) and \
+                (WaitingQueue.objects.filter(users=request.user,
+                                             waiting__book=bookinput).count() == 0):  # User can not issue more than 3 books & user can not issue same book again
             if bookinput.avail_stock > 0:
                 # new req to the Issuedbook model if book is available in stock
                 new_issue = IssuedBook.objects.create(book=bookinput, user=request.user,
@@ -72,9 +75,12 @@ class MyIssuedBook(View):
                               "Waiting list is " + str(
                                   waiting_obj.users.count()) + ", users --> " + usr_list + ",You will be notified when book is available..")
         else:
-            messages.error(request, 'You have already issued 3 books, return any book in order to issue another..')
+            messages.error(request,
+                           'You have already issued or request 3 books, return any book in order to issue another..')
             booklist = IssuedBook.objects.filter(user=request.user, status='booked')
-            return render(request, 'accounts/index.html', {'booklist': booklist})
+            book_with_pending = IssuedBook.objects.filter(user=request.user, status='pending')
+            return render(request, 'accounts/index.html',
+                          {'booklist': booklist, 'book_with_pending': book_with_pending})
         return render(request, 'accounts/index.html')
 
 
@@ -148,7 +154,9 @@ class AllBookList(generic.ListView):
 class MyRequestList(View):
     def get(self, request):
         reqlist = IssuedBook.objects.filter(user=request.user, status='pending')
-        return render(request, 'book/myrequestlist.html', {'object_list': reqlist})
+        waiting_list = WaitingQueue.objects.filter(users=request.user)
+        print(waiting_list)
+        return render(request, 'book/myrequestlist.html', {'object_list': reqlist, 'Waiting_list': waiting_list})
 
 
 class DeleteRequestUser(View):
@@ -161,9 +169,9 @@ class DeleteRequestUser(View):
 
 
 class IssuedBooklist(View):
-    def get(self,request):
-        issued_book=IssuedBook.objects.filter(status='booked')
-        return render(request,'book/issuedbooklist.html',{'issued_book':issued_book})
+    def get(self, request):
+        issued_book = IssuedBook.objects.filter(status='booked')
+        return render(request, 'book/issuedbooklist.html', {'issued_book': issued_book})
 
 
 class BookCreate(generic.CreateView):
@@ -179,3 +187,14 @@ class BookUpdate(generic.UpdateView):
 class BookDelete(generic.DeleteView):
     model = Book
     success_url = reverse_lazy('book:booklist')
+
+
+class WaitingReqDelete(View):
+    def post(self, request):
+        book = Book.objects.get(id=request.POST.get('book_id'))
+        obj_del = WaitingQueue.objects.get(users=request.user).delete()
+        w = WaitingTable.objects.get(book=book)
+        if w.users.count() == 0:  # for last user in waitingtable..
+            w.delete()
+        messages.info(request,'Waiting request deleted..')
+        return render(request, 'accounts/index.html')

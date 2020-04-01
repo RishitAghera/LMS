@@ -16,10 +16,10 @@
 {% if pending_req %}
 
     <table class="table table-hover" style='width:60%;margin-top:5%;'>
-    <thead><tr><td>User</td><td>Book</td><td>Category</td><td>Issue date</td></tr></thead>
+    <thead><tr><td>User</td><td>Book</td><td>Category</td><td>Issue date</td><td>Return date</td></tr></thead>
     {% for req in pending_req %}
         <form method="post" action="{% url 'book:approval' %}">{% csrf_token %}
-            <tr><td><input type="hidden" name="book" value="{{ req.book.id }}"><input type="hidden" name="user_id" value="{{ req.user_id }}">{{ forloop.counter}}. {{ req.user.name }}</td><td>{{ req.book.name }}</td><td>{{ req.book.category.name}}</td><td>{{ req.issued_date }}</td><td><button class="btn btn-default" type="submit">Approve</button><button class="btn btn-danger" type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">Reject</button></td></tr>
+            <tr><td><input type="hidden" name="book" value="{{ req.book.id }}"><input type="hidden" name="user_id" value="{{ req.user_id }}">{{ forloop.counter}}. {{ req.user.name }}</td><td>{{ req.book.name }}</td><td>{{ req.book.category.name}}</td><td>{{ req.issued_date }}</td><td>{{ req.return_date }}</td><td><button class="btn btn-default" type="submit">Approve</button><button class="btn btn-danger" type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">Reject</button></td></tr>
         </form>
 
         <div class="modal" id="myModal">
@@ -61,10 +61,18 @@
         <thead><tr><td>Book Name</td><td>Category</td><td>Issue date</td><td>Return_date</td><td></td></tr></thead>
     {% for entry in booklist %}
         <form method="post" action="{% url 'book:bookreturn' %}">{% csrf_token %}
-            <tr><td><input type="hidden" name="entry_id" value="{{ entry.id }}"><input type="hidden" name="book" value="{{ entry.book.id }}">{{forloop.counter}}. {{ entry.book.name }}</td><td>{{ entry.book.category.name }}</td><td>{{ entry.issued_date }}</td><td>{{ entry.return_date }}</td><td><button class="btn btn-default" type="submit">Return</button></td></tr>
+            <tr><td><input type="hidden" name="entry_id" value="{{ entry.id }}"><input type="hidden" name="book" value="{{ entry.book.id }}">{{forloop.counter}}. {{ entry.book.name }} by {{entry.book.author}}</td><td>{{ entry.book.category.name }}</td><td>{{ entry.issued_date }}</td><td>{{ entry.return_date }}</td><td><button class="btn btn-default" type="submit">Return</button></td></tr>
+        </form>
+    {% endfor %}
+    {% if book_with_pending %}
+        {% for entry in book_with_pending %}
+        <form method="post" action="{% url 'book:bookreturn' %}">{% csrf_token %}
+            <tr><td><input type="hidden" name="entry_id" value="{{ entry.id }}"><input type="hidden" name="book" value="{{ entry.book.id }}">{{forloop.counter}}. {{ entry.book.name }} by {{entry.book.author}}</td><td>{{ entry.book.category.name }}</td><td>{{ entry.issued_date }}</td><td>{{ entry.return_date }}</td><td><button class="btn btn-default" type="submit">Return</button></td></tr>
         </form>
     {% endfor %}
 
+
+        {% endif %}
     </table>
 {% endif %}
 

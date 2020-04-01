@@ -20,4 +20,5 @@ urlpatterns = [
     path('registration/',views.BookCreate.as_view(),name='bookadd'),
     path('update/<int:pk>/',views.BookUpdate.as_view(),name='bookupdate'),
     path('delete/<int:pk>/',views.BookDelete.as_view(),name='bookdelete'),
+    path('delete/waitingreq/',views.WaitingReqDelete.as_view(),name='waitingreqdelete'),
 ]
